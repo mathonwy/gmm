@@ -3,49 +3,58 @@
 
 using Eigen::MatrixXd;
 using Eigen::DiagonalMatrix;
-using Eigen::Dynamic;
 
-// typedef DiagonalMatrix<double, Dynamic, Dynamic> DiagonalMatrixXd;
-
-MatrixXd mean(const MatrixXd &data)
+MatrixXd computeMean(const MatrixXd &data)
 {
   MatrixXd mean = data.colwise().mean();
-
   return mean;
 }
 
-MatrixXd covar(const MatrixXd &data)
+MatrixXd computeCovar(const MatrixXd &data)
 {
   MatrixXd centered = data.rowwise() - data.colwise().mean();
-  // MatrixXd identity = MatrixXd::Identity(data.cols(), data.cols());
-
-  // MatrixXd centered = data - (identity * data.colwise().mean());
-
   MatrixXd devscoresums = centered.transpose() * centered;
   MatrixXd covar = devscoresums / double(data.rows() - 1);
-  // MatrixXd covar = (centered.adjoint() * centered) / double(data.rows());
 
   return covar;
 }
 
-// Eigen::VectorXd covar(MatrixXd data)
-// {
-//
-//
-//     return mean;
-// }
-// Eigen::VectorXd sdev(MatrixXd data)
-// {
-//     Eigen::VectorXd mean = mean(data);
-//     Eigen::VectorXd sum = Eigen::VectorXd::Zero(data.cols());
-//     for (int i=0; i < data.rows(); i++){
-// 	sum = sum + (data.row(i).transpose() - mean) ** 2;
-//     }
-//
-//     Eigen::VectorXd sdev = sum / data.rows();
-//
-//     return sdev;
-// }
+class Gaussian
+{
+  public:
+    void fitData(const MatrixXd &data){
+
+
+    }
+
+    void setMean(const MatrixXd &mean){
+
+
+    }
+
+    void setCovar(const MatrixXd &covar){
+
+
+    }
+
+    void getMean(){
+
+    }
+
+    void getCovar(){
+
+    }
+
+    void likelihood(const MatrixXd data){
+
+    }
+
+  private:
+
+    MatrixXd mean;
+    MatrixXd covar;
+
+};
 
 int main()
 {
@@ -69,6 +78,6 @@ int main()
 
     std::cout << "There are " << test.rows() << " test vectors." << std::endl;
     // std::cout << mean(test) << std::endl;
-    std::cout << covar(test) << std::endl;
+    std::cout << computeCovar(test) << std::endl;
     return 0;
 }
