@@ -2,12 +2,14 @@
 #include <math.h>
 #include <cmath>
 #include "Eigen/Dense"
+#include "/usr/local/Cellar/cppunit/1.13.2/include/cppunit/Test.h"
 
 using Eigen::MatrixXd;
 using Eigen::DiagonalMatrix;
+using namespace CppUnit;
 
-double pi = 3.14159;
-double e = 2.71828;
+static const double pi = 3.14159;
+static const double e = 2.71828;
 
 class Gaussian
 {
@@ -23,7 +25,6 @@ class Gaussian
 
     void setCovar(const MatrixXd &covar_in){
       covar = covar_in;
-
     }
 
     MatrixXd getMean(){
@@ -34,28 +35,17 @@ class Gaussian
       return covar;
     }
 
-    double log_likelihood(const MatrixXd &vector){
-      double twopi = pow( 2 * pi, double(vector.cols()) / 2);
-      double covar_determinant = pow( double(covar.determinant()), 1/2);
-      double multiplier = 1/(twopi * covar_determinant);
-      double l_multiplier = log(multiplier);
-      printf("The log multiplier is %f \n", l_multiplier);
-      MatrixXd covar_inverse = covar.inverse();
-      double exponent = -0.5 * ((vector - mean) * covar_inverse * (vector - mean).transpose())(0);
-      printf("The exponent is %f \n", exponent);
-      printf("The log likelihood is %f \n", l_multiplier  + exponent);
-      printf("The likelihood is %f \n", exp(l_multiplier  + exponent));
 
-      return (l_multiplier + exponent);
+    double getLogLikelihood(const MatrixXd &vector){
 
-      //take +and - 0.0000001, and perform the integral / use the cdf (??)
-
+      return computeLogLikelihood(const MatrixXd &vector);
     }
 
   private:
 
     MatrixXd mean;
     MatrixXd covar;
+
     MatrixXd computeMean(const MatrixXd &data)
     {
       MatrixXd mean = data.colwise().mean();
@@ -69,6 +59,15 @@ class Gaussian
       MatrixXd covar = devscoresums / double(data.rows() - 1);
 
       return covar;
+    }
+
+    double computeLogLikelihood(const MatrixXd &vector){
+
+      return -0.5 * (
+                        vector.cols() * log(2 * pi) -
+                        log(covar.determinant()) +
+                        ((vector - mean) * covar.inverse() * (vector - mean).adjoint())(0)
+                    );
     }
 
 };
@@ -100,6 +99,7 @@ int main()
     zero_vector << 0.0, 0.0, 0.0;
     new_gaussian.setMean(zero_vector);
     new_gaussian.setCovar(unit_variance);
-    new_gaussian.log_likelihood(new_gaussian.getMean());
+    double log_lik = new_gaussian.log_likelihood(new_gaussian.getMean());
+    std::cout << new_gaussian.getMean() << std::endl;
     return 0;
 }
