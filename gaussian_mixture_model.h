@@ -20,8 +20,12 @@ class GaussianMixtureModel
   public:
 
     int trainModel(const Eigen::MatrixXd &data);
-
     int getNumberComponents();
+    double getLogLikelihood(const Eigen::MatrixXd &vector);
+
+    GaussianMixtureModel();
+    GaussianMixtureModel(int components);
+    GaussianMixtureModel(int components, const Eigen::MatrixXd &data);
 
   private:
 
