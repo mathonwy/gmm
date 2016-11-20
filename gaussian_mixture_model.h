@@ -32,6 +32,8 @@ class GaussianMixtureModel
     std::vector<MixtureComponent> components;
 
     void addComponent(const MixtureComponent &new_component);
+    void e_step(const Eigen::MatrixXd &data);
+    void m_step(const Eigen::MatrixXd &data);
     void e_m(const Eigen::MatrixXd &data);
 };
 

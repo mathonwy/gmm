@@ -2,75 +2,62 @@
 #include <math.h>
 #include <cmath>
 #include "Eigen/Dense"
+#include "gaussian.h"
 #include "/usr/local/Cellar/cppunit/1.13.2/include/cppunit/Test.h"
 
 using Eigen::MatrixXd;
 using Eigen::DiagonalMatrix;
 using namespace CppUnit;
 
-static const double pi = 3.14159;
-static const double e = 2.71828;
+void Gaussian::fitData(const MatrixXd &data){
+  Gaussian::setMean(Gaussian::computeMean(data));
+  Gaussian::setCovar(Gaussian::computeCovar(data));
+}
 
-class Gaussian
+void Gaussian::setMean(const MatrixXd &mean_in){
+  Gaussian::mean = mean_in;
+}
+
+void Gaussian::setCovar(const MatrixXd &covar_in){
+  Gaussian::covar = covar_in;
+}
+
+MatrixXd Gaussian::getMean(){
+  return Gaussian::mean;
+}
+
+MatrixXd Gaussian::getCovar(){
+  return Gaussian::covar;
+}
+
+double Gaussian::getLogLikelihood(const MatrixXd &vector){
+  return Gaussian::computeLogLikelihood(vector);
+}
+
+MatrixXd Gaussian::computeMean(const MatrixXd &data)
 {
-  public:
-    void fitData(const MatrixXd &data){
-      setMean(computeMean(data));
-      setCovar(computeCovar(data));
-    }
+  MatrixXd mean = data.colwise().mean();
+  return mean;
+}
 
-    void setMean(const MatrixXd &mean_in){
-      mean = mean_in;
-    }
+MatrixXd Gaussian::computeCovar(const MatrixXd &data)
+{
+  MatrixXd centered = data.rowwise() - data.colwise().mean();
+  MatrixXd devscoresums = centered.transpose() * centered;
+  MatrixXd covar = devscoresums / double(data.rows() - 1);
 
-    void setCovar(const MatrixXd &covar_in){
-      covar = covar_in;
-    }
+  return covar;
+}
 
-    MatrixXd getMean(){
-      return mean;
-    }
+double Gaussian::computeLogLikelihood(const MatrixXd &vector){
 
-    MatrixXd getCovar(){
-      return covar;
-    }
+  return -0.5 * (
+                    vector.cols() * log(2 * pi) -
+                    log(Gaussian::covar.determinant()) +
+                    ((vector - Gaussian::mean) * Gaussian::covar.inverse() * (vector - Gaussian::mean).adjoint())(0)
+                );
+}
 
-
-    double getLogLikelihood(const MatrixXd &vector){
-
-      return computeLogLikelihood(const MatrixXd &vector);
-    }
-
-  private:
-
-    MatrixXd mean;
-    MatrixXd covar;
-
-    MatrixXd computeMean(const MatrixXd &data)
-    {
-      MatrixXd mean = data.colwise().mean();
-      return mean;
-    }
-
-    MatrixXd computeCovar(const MatrixXd &data)
-    {
-      MatrixXd centered = data.rowwise() - data.colwise().mean();
-      MatrixXd devscoresums = centered.transpose() * centered;
-      MatrixXd covar = devscoresums / double(data.rows() - 1);
-
-      return covar;
-    }
-
-    double computeLogLikelihood(const MatrixXd &vector){
-
-      return -0.5 * (
-                        vector.cols() * log(2 * pi) -
-                        log(covar.determinant()) +
-                        ((vector - mean) * covar.inverse() * (vector - mean).adjoint())(0)
-                    );
-    }
-
-};
 
 int main()
 {
@@ -99,7 +86,7 @@ int main()
     zero_vector << 0.0, 0.0, 0.0;
     new_gaussian.setMean(zero_vector);
     new_gaussian.setCovar(unit_variance);
-    double log_lik = new_gaussian.log_likelihood(new_gaussian.getMean());
+    double log_lik = new_gaussian.getLogLikelihood(new_gaussian.getMean());
     std::cout << new_gaussian.getMean() << std::endl;
     return 0;
 }
